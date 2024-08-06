@@ -13,7 +13,8 @@ if (isset($_GET['search'])) {
 $sql = "SELECT * FROM transaksi WHERE 
         nama_pembeli LIKE '%$searchTerm%' 
         OR nama_penerima LIKE '%$searchTerm%' 
-        OR id LIKE '%$searchTerm%'";
+        OR id LIKE '%$searchTerm%'
+        OR nama_pengirim LIKE '%$searchTerm%'";
 
 $result = $conn->query($sql);
 ?>
@@ -27,42 +28,57 @@ $result = $conn->query($sql);
     <title>Data Management Dashboard</title>
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f8f9fa;
             font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f9f9f9;
         }
 
         .container {
             max-width: 1200px;
-            margin: 40px auto;
+            margin: auto;
             background-color: #fff;
-            padding: 30px;
+            padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .search-box {
-            margin-bottom: 20px;
             display: flex;
             justify-content: center;
-            gap: 10px;
+            margin-bottom: 20px;
         }
 
-        .btn-custom {
-            border-radius: 50px;
-            font-size: 1rem;
+        input[type="text"] {
+            width: 300px;
+            padding: 10px;
+            margin-right: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        input[type="submit"] {
             padding: 10px 20px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
         }
 
         table {
@@ -79,13 +95,12 @@ $result = $conn->query($sql);
 
         th,
         td {
-            padding: 12px;
+            padding: 10px;
             text-align: left;
         }
 
         th {
-            background-color: #007bff;
-            color: white;
+            background-color: #f2f2f2;
         }
 
         .actions a {
@@ -98,15 +113,18 @@ $result = $conn->query($sql);
             text-decoration: underline;
         }
 
-        .table-responsive {
-            margin-top: 20px;
+        .export-buttons {
+            text-align: center;
+            margin-bottom: 20px;
         }
 
-        @media (max-width: 768px) {
-            .search-box {
-                flex-direction: column;
-                align-items: center;
-            }
+        .btn-custom {
+            border-radius: 50px;
+            font-size: 1rem;
+            padding: 10px 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
     </style>
 </head>
@@ -117,9 +135,9 @@ $result = $conn->query($sql);
 
         <!-- Form Pencarian -->
         <div class="search-box">
-            <form class="d-flex" action="index.php" method="GET">
-                <input type="text" name="search" class="form-control" placeholder="Cari berdasarkan Nama/ID" value="<?php echo htmlspecialchars($searchTerm); ?>">
-                <input type="submit" class="btn btn-primary" value="Cari">
+            <form action="index.php" method="GET">
+                <input type="text" name="search" placeholder="Cari berdasarkan Nama/ID/Nama Pengirim" value="<?php echo $searchTerm; ?>">
+                <input type="submit" value="Cari">
             </form>
         </div>
 
@@ -141,6 +159,7 @@ $result = $conn->query($sql);
                         <th>Total Harga</th>
                         <th>Untung</th>
                         <th>Rugi</th>
+                        <th>Nama Pengirim</th> 
                         <th>Tanggal Pengiriman</th>
                         <th>Jam Pengiriman</th>
                         <th>No Telpon Pengirim</th>
@@ -152,53 +171,47 @@ $result = $conn->query($sql);
                     if ($result->num_rows > 0) {
                         while ($row = $result->fetch_assoc()) {
                             echo "<tr>
-                            <td>" . $row['id'] . "</td>
-                            <td>" . $row['nama_pembeli'] . "</td>
-                            <td>" . $row['no_telpon_pembeli'] . "</td>
-                            <td>" . $row['nama_penerima'] . "</td>
-                            <td>" . $row['no_telpon_penerima'] . "</td>
-                            <td>" . $row['alamat_jalan'] . " No. " . $row['no_rumah'] . " RT/RW " . $row['rt_rw'] . " " . $row['desa_kelurahan'] . ", " . $row['kecamatan'] . ", " . $row['kabupaten_kota'] . ", " . $row['provinsi'] . "</td>
-                            <td>" . $row['dp_tanggal'] . "</td>
-                            <td>Rp" . number_format($row['dp_nominal'], 0, ',', '.') . "</td>
-                            <td>" . $row['pelunasan_tanggal'] . "</td>
-                            <td>Rp" . number_format($row['pelunasan_nominal'], 0, ',', '.') . "</td>
-                            <td>Rp" . number_format($row['total_harga'], 0, ',', '.') . "</td>
-                            <td>Rp" . number_format($row['untung'], 0, ',', '.') . "</td>
-                            <td>Rp" . number_format($row['rugi'], 0, ',', '.') . "</td>
-                            <td>" . $row['tanggal_pengiriman'] . "</td>
-                            <td>" . $row['jam_pengiriman'] . "</td>
-                            <td>" . $row['no_telpon_pengirim'] . "</td>
-                            <td class='actions'>
-                                <a href='edit.php?id=" . $row['id'] . "' class='btn btn-warning btn-sm'>Edit</a>
-                                <a href='delete.php?id=" . $row['id'] . "' class='btn btn-danger btn-sm' onclick=\"return confirm('Apakah Anda yakin ingin menghapus data ini?')\">Delete</a>
-                            </td>
-                        </tr>";
+                                <td>" . $row['id'] . "</td>
+                                <td>" . $row['nama_pembeli'] . "</td>
+                                <td>" . $row['no_telpon_pembeli'] . "</td>
+                                <td>" . $row['nama_penerima'] . "</td>
+                                <td>" . $row['no_telpon_penerima'] . "</td>
+                                <td>" . $row['alamat_jalan'] . " No. " . $row['no_rumah'] . " RT/RW " . $row['rt_rw'] . " " . $row['desa_kelurahan'] . ", " . $row['kecamatan'] . ", " . $row['kabupaten_kota'] . ", " . $row['provinsi'] . "</td>
+                                <td>" . $row['dp_tanggal'] . "</td>
+                                <td>Rp" . number_format($row['dp_nominal'], 0, ',', '.') . "</td>
+                                <td>" . $row['pelunasan_tanggal'] . "</td>
+                                <td>Rp" . number_format($row['pelunasan_nominal'], 0, ',', '.') . "</td>
+                                <td>Rp" . number_format($row['total_harga'], 0, ',', '.') . "</td>
+                                <td>Rp" . number_format($row['untung'], 0, ',', '.') . "</td>
+                                <td>Rp" . number_format($row['rugi'], 0, ',', '.') . "</td>
+                                <td>" . $row['nama_pengirim'] . "</td> <!-- Nama Pengirim -->
+                                <td>" . $row['tanggal_pengiriman'] . "</td>
+                                <td>" . $row['jam_pengiriman'] . "</td>
+                                <td>" . $row['no_telpon_pengirim'] . "</td>
+                                <td class='actions'>
+                                    <a href='edit.php?id=" . $row['id'] . "'>Edit</a>
+                                    <a href='delete.php?id=" . $row['id'] . "' onclick=\"return confirm('Anda yakin ingin menghapus data ini?');\">Delete</a>
+                                </td>
+                            </tr>";
                         }
                     } else {
-                        echo "<tr><td colspan='17' class='text-center'>Tidak ada data ditemukan</td></tr>";
+                        echo "<tr><td colspan='18'>Tidak ada data ditemukan.</td></tr>";
                     }
                     ?>
                 </tbody>
             </table>
         </div>
 
-        <!-- Tombol Ekspor -->
-        <div class="d-flex justify-content-end">
-            <a href="export_excel.php" class="btn btn-success btn-custom">
-                <i class="bi bi-file-earmark-excel-fill"></i> Export to Excel
-            </a>
-            <a href="export_pdf.php" class="btn btn-danger btn-custom">
-                <i class="bi bi-file-earmark-pdf-fill"></i> Export to PDF
-            </a>
-        </div>
+        <!-- Tombol Export -->
+        <div class="export-buttons">
+    <a href="export_pdf.php" class="btn btn-danger btn-custom"><i class="bi bi-file-earmark-pdf"></i> Export to PDF</a>
+    <a href="export_excel.php" class="btn btn-success btn-custom"><i class="bi bi-file-earmark-excel"></i> Export to Excel</a>
+    <a href="laporan_keuangan.php" class="btn btn-info btn-custom"><i class="bi bi-graph-up"></i> Laporan Keuangan</a>
+</div>
     </div>
 
     <!-- Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
-
-<?php $conn->close(); ?>

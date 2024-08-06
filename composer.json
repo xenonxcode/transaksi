@@ -1,0 +1,19 @@
+{
+    "name": "vendor/autoload.php",
+    "description": "database-transaksi",
+    "autoload": {
+        "psr-4": {
+            "Vendor\\AutoloadPhp\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "aji"
+        }
+    ],
+    "require": {
+        "phpoffice/phpspreadsheet": "^2.2",
+        "mpdf/mpdf": "^8.2",
+        "tecnickcom/tcpdf": "^6.7"
+    }
+}
